@@ -1,0 +1,39 @@
+#!/usr/bin/osascript
+
+# do shell script {"rm -rf /tmp/foo.out"}
+
+on run argv
+
+set shinyfile to item 1 of argv
+activate application "Microsoft Excel"
+delay 0.5
+tell application "System Events"
+	tell process "Microsoft Excel"
+		delay 0.5
+		set foo to open shinyfile
+		try
+			set cancel to button "Cancel" of window 1
+			click (cancel)
+		end try
+		try
+			set macros to button "Enable Macros" of window 1
+			click macros
+		end try
+		delay 0.5
+		try
+			set links to button "Ignore Links" of window 1
+			click links
+		end try
+		delay 0.5
+	end tell
+end tell
+tell application "Microsoft Excel"
+  # unprotect active workbook
+  repeat with ws in (get every worksheet in active workbook)
+    unprotect ws
+  end repeat
+	save active workbook
+	close active workbook
+end tell
+
+end run

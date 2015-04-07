@@ -1,0 +1,93 @@
+#!/usr/bin/osascript
+
+# do shell script {"rm -rf /tmp/foo.out"}
+
+#log "--- starting out."
+
+
+on returnFileContentsAsList(theFile)
+  set fileHandle to open for access theFile
+  set theLines to paragraphs of (read fileHandle)
+  close access fileHandle
+  return theLines
+end
+
+on run argv
+
+set shinyfile to item 1 of argv
+set celldatfile to item 2 of argv
+set celllinelist to {}
+set celllines to returnFileContentsAsList(celldatfile)
+repeat with nextLine in celllines
+       if length of nextLine is greater than 0 then
+          copy nextLine to the end of celllinelist
+       end if
+end repeat
+
+log celllines
+log "=== activating excel"
+activate application "Microsoft Excel"
+log "=== opening workbook"
+log shinyfile
+ignoring application responses
+delay 0.5
+     tell application "Microsoft Excel"
+          set foo to open shinyfile
+     end tell
+delay 0.5   
+end ignoring
+log "=== system events for button pushes"
+tell application "System Events" to tell process "Microsoft Excel" to try
+     click button "Yes" of window 1
+end try
+delay 0.3
+tell application "System Events" to tell process "Microsoft Excel" to try
+     click button "Cancel" of window 1
+end try
+delay 0.3
+tell application "System Events" to tell process "Microsoft Excel" to try 
+     click button "Enable Macros" of window 1
+end try
+delay 0.3
+tell application "System Events" to tell process "Microsoft Excel" to try
+     click button "Ignore Links" of window 1
+end try
+delay 0.3
+
+set delims to Applescript's text item delimiters
+set Applescript's text item delimiters to ","
+
+log celllinelist
+log "=== unprotect workbook"
+
+tell application "Microsoft Excel"
+     unprotect active workbook
+	   calculate
+#    set value of range "C26" to 150
+log "=== process cells"
+     repeat with cellline in celllinelist
+         set celldat to text items of cellline
+         set mysheet to (item 1 of celldat as string)
+         set mycell to (item 2 of celldat as string)
+         set myval to (item 3 of celldat as real)
+         log "sheet cell val = " & (mysheet as string) &" "& (mycell as string) &" "& (myval as string)
+         tell worksheet mysheet of active workbook
+              unprotect
+              set value of range mycell to myval
+         end tell
+     end repeat
+     tell worksheet "Verification" of active workbook
+		      set dat1 to get value of range "F32"
+		      set dat2 to get value of range "F33"
+		      set dat3 to get value of range "F35"
+		      set dat4 to get value of range "F39"
+	   end tell
+	   save active workbook
+	   close active workbook
+end tell
+set Applescript's text item delimiters to delims
+set dat to (dat1 as string) & "\n" & (dat2 as string) & "\n" & (dat3 as string) & "\n" & (dat4 as string)
+set output to (dat as string) 
+return output
+delay 0.25
+end run

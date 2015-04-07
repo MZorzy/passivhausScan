@@ -1,0 +1,56 @@
+#!/usr/bin/osascript
+
+# do shell script {"rm -rf /tmp/foo.out"}
+
+
+on run argv
+
+set shinyfile to item 1 of argv
+set mysheet to item 2 of argv
+set mycell to item 3 of argv
+set myval to item 4 of argv
+
+
+ignoring application responses
+     tell application "Microsoft Excel"
+          activate 
+          set foo to open shinyfile
+     end tell
+end ignoring
+delay 1
+tell application "System Events"
+	tell process "Microsoft Excel"		
+		try
+			set cancel to button "Cancel" of window 1
+			click (cancel)
+		end try
+		delay 0.5
+		try
+			set macros to button "Enable Macros" of window 1
+			click macros
+		end try
+		delay 0.5
+		try
+			set links to button "Ignore Links" of window 1
+			click links
+		end try
+		delay 0.5
+	end tell
+end tell
+
+tell application "Microsoft Excel"
+     unprotect active workbook
+	   calculate
+#    set value of range "C26" to 150
+     tell worksheet mysheet of active workbook
+          set value of range mycell to (myval as real)
+		      set dat to get value of range "F39"
+	   end tell
+	   save active workbook
+	   close active workbook
+end tell
+
+set output to (dat as string) 
+return output
+
+end run

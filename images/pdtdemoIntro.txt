@@ -1,0 +1,7 @@
+
+
+These pages are a demonstration of PDT.
+
+The demonstration begins by defining a simlated experimental response, called the response surface.  This is accomplished in the tab 'Response'.
+
+Experiments are then run, virtually, in the 'Experiments' tab.
